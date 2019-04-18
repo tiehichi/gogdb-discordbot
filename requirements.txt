@@ -1,0 +1,6 @@
+wheel
+discord.py
+aiohttp
+aiodns
+cchardet
+fake_useragent
