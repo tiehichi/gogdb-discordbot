@@ -9,12 +9,26 @@ from printer import *
 from datetime import datetime
 import config
 
+
 bot = commands.Bot(command_prefix='!')
-api = API(config.GOGDBHOST)
-#author = Author('GOGDB Discord Bot')
-author = Author('')
-footer = Footer('Powered by GOGDB')
-printer = Printer(author, footer)
+
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
+    print(bot.user.id)
+
+
+bot.remove_command('help')
+@bot.command()
+async def help(ctx):
+    embed = printer.gen_embed('GOGDB Discord Bot', 'Discord Bot powered by **GOG DataBase**\n\u200b')
+    embed.add_field(name='!help', value='Show this message\n\u200b')
+    embed.add_field(name='!query [string]',
+            value='Query products with [string] in their names on GOG, the result format is as follows: \n\u200b\n**[Product Name]**\n[product id]\n\u200b',
+            inline=False)
+    embed.add_field(name='!detail [product id]', value='Display product detail\n\u200b', inline=False)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -70,4 +84,11 @@ async def detail(ctx, args=''):
     await msg.edit(embed=embed)
 
 
-bot.run(config.BOTTOKEN)
+if __name__ == '__main__':
+    api = API(config.GOGDBHOST)
+
+    author = Author('')
+    footer = Footer('Powered by GOGDB')
+    printer = Printer(author, footer)
+
+    bot.run(config.BOTTOKEN)
