@@ -11,7 +11,8 @@ import config
 
 bot = commands.Bot(command_prefix='!')
 api = API(config.GOGDBHOST)
-author = Author('GOGDB Discord Bot')
+#author = Author('GOGDB Discord Bot')
+author = Author('')
 footer = Footer('Powered by GOGDB')
 printer = Printer(author, footer)
 
