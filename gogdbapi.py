@@ -110,9 +110,9 @@ class APIUtility():
 
 class API():
 
-    def __init__(self, retries=5):
+    def __init__(self, hosts, retries=5):
         self.__hosts = dict()
-        self.__hosts['root'] = 'https://api.gog-db.info'
+        self.__hosts['root'] = hosts
         self.__hosts['detail'] = f"{self.__hosts['root']}/products"
         self.__hosts['price'] = f"{self.__hosts['root']}/price"
         self.__hosts['discount'] = f"{self.__hosts['root']}/discount"
@@ -218,4 +218,6 @@ if __name__ == '__main__':
     logger.info(asyncio.run(api.product_detail('1')))
     logger.info(asyncio.run(api.product_price('1')))
     logger.info(asyncio.run(api.product_price('1', 'cn')))
+    logger.info(asyncio.run(api.product_discount('1')))
+    logger.info(asyncio.run(api.product_changes('1')))
 
