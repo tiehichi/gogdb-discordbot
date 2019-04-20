@@ -80,6 +80,69 @@ class Printer:
         return embed
 
 
+    def query_embed(self, dict_data):
+        embed = self.gen_embed(title='Query Result',
+                description=f"**{dict_data['count']}** productions found")
+        if len(dict_data['products']) != 0:
+            for prod in dict_data['products']:
+                embed.add_field(name=prod['title'], value=str(prod['id']), inline=False)
+
+        return embed
+
+
+    def detail_embed(self, dict_data):
+        desc = self.links_parse(dict_data)
+        embed = self.gen_embed(dict_data['title'], desc)
+
+        embed = self.generic_field(embed, dict_data,
+                    ['inDevelopment',
+                        'averageRating',
+                        'inDevelopment',
+                        'isAvailableForSale',
+                        'isPreorder',
+                        'productType',
+                        'id',
+                        'globalReleaseDate'])
+        embed = self.list_field(embed, dict_data,
+                    ['tags',
+                        'features',
+                        'developers',
+                        'publishers',
+                        'supportedOS'])
+        embed = self.image_field(embed, dict_data)
+        embed = self.thumb_field(embed, dict_data)
+
+        return embed
+
+
+    def price_embed(self, price_dict):
+        embed = self.gen_embed(price_dict['title'], 'Base Price')
+
+        for p in price_dict['baseprice']:
+            embed.add_field(name=p['country'], value=f"{p['price']} {p['currency']}")
+        return embed
+
+
+    def language_embed(self, dict_data):
+        embed = self.gen_embed(dict_data['title'], 'Language Support')
+        embed = self.thumb_field(embed, dict_data)
+
+        name_dict = dict()
+        value_dict = dict()
+
+        for lan in dict_data['localizations']:
+            if lan['code'] not in name_dict:
+                name_dict[lan['code']] = lan['name']
+                value_dict[lan['code']] = f"[{lan['type']}] "
+            else:
+                value_dict[lan['code']] += f"[{lan['type']}] "
+
+        for key in name_dict:
+            embed.add_field(name=name_dict[key], value=value_dict[key])
+
+        return embed
+
+
     def generic_field(self, embed, dict_data, only=[], exclude=[]):
         if len(only) != 0:
             for key in dict_data:
@@ -106,25 +169,20 @@ class Printer:
         return embed
 
 
-    def query_result(self, dict_data):
-        embed = self.gen_embed(title='Query Result',
-                description=f"**{dict_data['count']}** productions found")
-        if len(dict_data['products']) != 0:
-            for prod in dict_data['products']:
-                embed.add_field(name=prod['title'], value=str(prod['id']), inline=False)
-
-        return embed
-
-
-    def image_parse(self, embed, dict_data):
+    def image_field(self, embed, dict_data):
         img = dict_data.get('image', None)
-        boxartimg = dict_data['links'].get('boxArtImage', None)
 
         if img != None:
             url = img['href']
             formatter = img['formatters']
             img = url.replace('{formatter}', formatter[len(formatter)-1].replace('_2x', ''))
             embed.set_image(url=img)
+
+        return embed
+
+
+    def thumb_field(self, embed, dict_data):
+        boxartimg = dict_data['links'].get('boxArtImage', None)
 
         if boxartimg != None:
             embed.set_thumbnail(url=boxartimg)

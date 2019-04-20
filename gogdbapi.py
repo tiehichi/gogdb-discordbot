@@ -173,11 +173,18 @@ class API():
 
         async with APIRequester(self.__retries) as request:
 
-            price = await request.getjson(f"{self.__hosts['price']}/{prod_id}", params)
+            urls = [f"{self.__hosts['detail']}/{prod_id}",
+                    f"{self.__hosts['price']}/{prod_id}"]
+            detail, price = await request.getjson(urls, params)
 
             if self.__utl.errorchk(price):
                 return dict()
             else:
+                if country == '':
+                    price['title'] = detail['title']
+                    price['id'] = prod_id
+                else:
+                    price = {'count':1, 'limit':0, 'page':1, 'pages':1, 'baseprice':[price], 'title':detail['title'], 'id':prod_id}
                 return price
 
 

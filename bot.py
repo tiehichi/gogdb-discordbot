@@ -28,21 +28,26 @@ async def help(ctx):
             value='Query products with [string] in their names on GOG, the result format is as follows: \n\u200b\n**[Product Name]**\n[product id]\n\u200b',
             inline=False)
     embed.add_field(name='!detail [product id]', value='Display product detail\n\u200b', inline=False)
+    embed.add_field(name='!language [product id]', value='Display product language support\n\u200b', inline=False)
+    embed.add_field(name='!price [product id] [country code]', value='Display product baseprice in country\n\u200b', inline=False)
     await ctx.send(embed=embed)
 
 
 @bot.command()
-async def query(ctx, args=''):
-    if args=='':
+async def query(ctx, *args):
+    if len(args) == 0:
         embed = discord.Embed(title='Lack of Args!', description='use **!query [string]**')
         await ctx.send(embed=embed)
         return
+
+    args = ' '.join(args)
+
     embed = discord.Embed(title="Loading...")
     msg = await ctx.send(embed=embed)
 
     result = await api.query_products(args)
 
-    embed = printer.query_result(result)
+    embed = printer.query_embed(result)
 
     await msg.edit(embed=embed)
 
@@ -53,6 +58,7 @@ async def detail(ctx, args=''):
         embed = discord.Embed(title='Lack of Args!', description='use **!detail [product id]**')
         await ctx.send(embed=embed)
         return
+
     embed = discord.Embed(title='Loading...')
     msg = await ctx.send(embed=embed)
 
@@ -63,24 +69,49 @@ async def detail(ctx, args=''):
         await msg.edit(embed=embed)
         return
 
-    desc = printer.links_parse(result)
-    embed = printer.gen_embed(result['title'], description=desc)
-    embed = printer.generic_field(embed, result,
-            ['inDevelopment',
-                'averageRating',
-                'inDevelopment',
-                'isAvailableForSale',
-                'isPreorder',
-                'productType',
-                'id',
-                'globalReleaseDate'])
-    embed = printer.list_field(embed, result,
-            ['tags',
-                'features',
-                'developers',
-                'publishers',
-                'supportedOS'])
-    embed = printer.image_parse(embed, result)
+    embed = printer.detail_embed(result)
+    await msg.edit(embed=embed)
+
+
+@bot.command()
+async def language(ctx, args=''):
+    if args == '':
+        embed = discord.Embed(title='Lack of Args!', description='use **!language [product id]**')
+        await ctx.send(embed=embed)
+        return
+
+    embed = discord.Embed(title='Loading...')
+    msg = await ctx.send(embed=embed)
+
+    result = await api.product_detail(args)
+
+    if len(result) == 0:
+        embed = discord.Embed(title='Oops, something wrong, please check product id')
+        await msg.edit(embed=embed)
+        return
+
+    embed = printer.language_embed(result)
+    await msg.edit(embed=embed)
+
+
+@bot.command()
+async def price(ctx, *args):
+    if len(args) < 2:
+        embed = discord.Embed(title='Lack of Args!', description='use **!price [product id] [country code]**')
+        await ctx.send(embed=embed)
+        return
+
+    embed = discord.Embed(title='Loading...')
+    msg = await ctx.send(embed=embed)
+
+    result = await api.product_price(args[0], args[1])
+
+    if len(result) == 0:
+        embed = discord.Embed(title='Oops, something wrong, please check product id')
+        await msg.edit(embed=embed)
+        return
+
+    embed = printer.price_embed(result)
     await msg.edit(embed=embed)
 
 
